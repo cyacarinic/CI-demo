@@ -1,0 +1,11 @@
+version: '3'
+services:
+  web:
+    build: ./web/
+    image: apache_server
+    container_name: web
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./web/public-html/:/usr/local/apache2/htdocs/
