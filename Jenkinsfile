@@ -25,7 +25,7 @@ env.DOCKERHUB_USERNAME = 'devrcp'
       }
     }
     stage("Build") {
-      sh "docker build -t ${DOCKERHUB_USERNAME}/cd-demo:${BUILD_NUMBER} ."
+      sh "docker build -t ${DOCKERHUB_USERNAME}/cd-demo:${BUILD_NUMBER} ./web/"
     }
     stage("Publish") {
       withDockerRegistry([credentialsId: 'dockerhub-devrcp']) {
