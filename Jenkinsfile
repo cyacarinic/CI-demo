@@ -54,6 +54,7 @@ env.DOCKERHUB_USERNAME = 'devsrcp'
   // }
 
   node("docker-prod") {
+    input 'Are you sure?'
     stage("Production") {
       try {
         // Create the service if it doesn't exist otherwise just update the image
