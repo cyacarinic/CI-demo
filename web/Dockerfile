@@ -1,6 +1,6 @@
-FROM httpd:2.4
+FROM php:7.0-apache
 MAINTAINER Claudio Yacarini <cyacarinic@gmail.com>
 
-WORKDIR /usr/local/apache2/htdocs/
+WORKDIR /var/www/html/
 
-COPY ./public-html/ /usr/local/apache2/htdocs/
+COPY ./public-html/ /var/www/html/
