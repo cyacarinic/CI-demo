@@ -38,18 +38,26 @@ env.DOCKERHUB_USERNAME = 'devsrcp'
     checkout scm
 
     stage("Staging") {
-      try {
-        sh "docker rm -f cd-demo || true"
-        sh "docker run -d -p 8080:80 --name=cd-demo ${DOCKERHUB_USERNAME}/cd-demo:${BUILD_NUMBER}"
-        // sh "docker run --rm -v ${WORKSPACE}:/go/src/cd-demo --link=cd-demo -e SERVER=cd-demo golang go test cd-demo -v"
-
-      } catch(e) {
-        error "Staging failed"
-      } finally {
-        sh "docker rm -f cd-demo || true"
-        sh "docker ps -aq | xargs docker rm || true"
-        sh "docker images -aq -f dangling=true | xargs docker rmi || true"
-      }
+        try {
+          // Create the service if it doesn't exist otherwise just update the image
+          sh '''
+            SERVICES=$(docker service ls --filter name=cd-demo --quiet | wc -l)
+            if [[ "$SERVICES" -eq 0 ]]; then
+              docker network rm cd-demo || true
+              docker network create --driver overlay --attachable cd-demo
+              docker service create --replicas 3 --network cd-demo --name cd-demo -p 8080:80 ${DOCKERHUB_USERNAME}/cd-demo:${BUILD_NUMBER}
+            else
+              docker service update --image ${DOCKERHUB_USERNAME}/cd-demo:${BUILD_NUMBER} cd-demo
+            fi
+            '''
+          // run some final tests in staging
+          checkout scm
+        }catch(e) {
+          sh "docker service update --rollback  cd-demo"
+          error "Service update failed in staging"
+        }finally {
+          sh "docker ps -aq | xargs docker rm || true"
+        }
     }
   }
 
